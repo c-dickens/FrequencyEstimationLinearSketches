@@ -5,17 +5,12 @@
 #include "counting_sketches.h"
 #include <vector>
 #include <random>
-#include <iostream>
 
 using namespace std ;
 
-// Counting Sketch class functions
-
-// Constructor
 CountingSketch::CountingSketch(const uint64_t &num_hashes, const uint64_t &num_buckets, const uint64_t &seed):
     num_hashes(num_hashes), num_buckets(num_buckets), seed(seed) {
         table.resize(num_hashes, std::vector<uint64_t>(num_buckets));
-        // Can remove this function CountingSketch::init_hash_parameters(0,10)  ;
     };
 
 std::vector<uint64_t> CountingSketch::init_hash_parameters(uint64_t num_rands, uint64_t lower, uint64_t upper) {
@@ -33,17 +28,13 @@ std::vector<uint64_t> CountingSketch::init_hash_parameters(uint64_t num_rands, u
     for (int j = 0; j < num_rands; ++j) {
         random_ints.push_back(uniform_random_ints(rng));
     }
-
-    //    cout << "****** PRINTING THE RANDOM INTS ****** " << std::endl ;
-    //    for (const int r: random_ints) {
-    //        std::cout << r << " ";
-    //    }
-    //    std::cout << std::endl ;
     return random_ints ;
 }
 
-// Getters
 std::vector<uint64_t> CountingSketch::get_table_shape(){
+    /*
+     * Returns a vector whose entries are the number of rows and number of columns in the sketch table.
+     */
     std::vector<uint64_t> shape(2);
     shape.at(0) = CountingSketch::get_num_hashes() ;
     shape.at(1) = CountingSketch::get_num_buckets() ;

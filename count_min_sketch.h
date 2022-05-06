@@ -1,5 +1,6 @@
 //
 // Created by Charlie Dickens on 04/05/2022.
+// CountMin sketch inherits from the counting_sketch class.
 //
 
 #ifndef LINEARSKETCHES_COUNTMINSKETCH_H
