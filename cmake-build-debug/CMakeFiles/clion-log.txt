@@ -1,0 +1,4 @@
+/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/Applications/CLion.app/Contents/bin/ninja/mac/ninja -G Ninja /Users/charlied/cpp-projects/LinearSketches
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /Users/charlied/cpp-projects/LinearSketches/cmake-build-debug
