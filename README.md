@@ -4,6 +4,8 @@ This repository contains c++ code for _Linear Sketches for Frequency Estimation.
 So far, only the _CountMinSketch_ has been implemented, although the next
 step is to also include the _CountSketch_.
 
+An overview of the CountMin sketch can be found [here](http://dimacs.rutgers.edu/~graham/pubs/papers/cmencyc.pdf).
+
 ## Problem Setting:
 Let $D$ be a data stream of integers and let $f$ be the underlying 
 frequency vector with every $f_i$ counting the number of occurences of $i$
