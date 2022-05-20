@@ -13,15 +13,17 @@ using namespace std ;
 
 class CountMinSketch : public CountingSketch {
     public:
-        CountMinSketch(uint64_t n_h, uint64_t n_b, uint64_t s)  ;
-        void update(uint64_t item, uint64_t weight=1) ;
-        uint64_t get_estimate(uint64_t item) ;
+        CountMinSketch(uint64_t num_hashes, uint64_t num_buckets, uint64_t seed)  ;
+        int64_t get_estimate(uint64_t item) ;
+        void update(uint64_t item, int64_t weight=1) ;
+        int64_t get_upper_bound(uint64_t item) ;
+        int64_t get_lower_bound(uint64_t item) ;
 
-    private:
+private:
         void set_hash_parameters() ;
         uint64_t get_bucket_hash(uint64_t item, uint64_t a, uint64_t b) ;
         vector<uint64_t> a_hash_params, b_hash_params ;
-        float epsilon ;
+
 };
 
 

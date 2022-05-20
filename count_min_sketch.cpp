@@ -3,12 +3,22 @@
 //
 #include <iostream>
 #include <cmath>
+#include <random>
 #include "count_min_sketch.h"
 
+
 // Constructor
-CountMinSketch::CountMinSketch(uint64_t n_hashes, uint64_t n_buckets, uint64_t s )
-        : CountingSketch(n_hashes, n_buckets, s){
+CountMinSketch::CountMinSketch(uint64_t num_hashes, uint64_t num_buckets, uint64_t seed )
+        : CountingSketch(num_hashes, num_buckets, seed){
     CountMinSketch::set_hash_parameters() ;
+    epsilon = exp(1.0) / float(num_buckets) ;
+    delta = 1.0 / exp(float(num_hashes)) ;
+    confidence = 1.0 - delta ;
+    std::cout << epsilon << " " << delta << std::endl ;
+//    vector<uint64_t> a_hash_params(num_hashes) ;
+//    vector<uint64_t> b_hash_params(num_hashes) ;
+//    a_hash_params.resize(num_hashes) ;
+//    b_hash_params.resize(num_hashes) ;
 } ;
 
 void CountMinSketch::set_hash_parameters(){
@@ -18,13 +28,17 @@ void CountMinSketch::set_hash_parameters(){
      * We generate 2*num_hashes from CountingSketch::init_hash_parameters and then iterate through to get
      * the values of a and b for the respective arrays.
      */
-    vector<uint64_t> all_hash_params ;
-    all_hash_params = CountingSketch::init_hash_parameters(2*num_hashes, 0, large_prime - 1);
+    default_random_engine rng(seed);
+    uniform_int_distribution<uint64_t> uniform_random_ints(0, large_prime - 1);
+    a_hash_params.reserve(num_hashes) ;
+    b_hash_params.reserve(num_hashes) ;
 
     for(int i=0 ; i < num_hashes ; ++i){
-        CountMinSketch::a_hash_params.push_back(all_hash_params[i]) ;
-        CountMinSketch::b_hash_params.push_back(all_hash_params[num_hashes+i]) ;
+        cout << uniform_random_ints(rng) << std::endl ;
+        a_hash_params[i] = uniform_random_ints(rng);
+        b_hash_params[i] = uniform_random_ints(rng);
     }
+
 }
 
 uint64_t CountMinSketch::get_bucket_hash(uint64_t item, uint64_t a, uint64_t b){
@@ -39,7 +53,7 @@ uint64_t CountMinSketch::get_bucket_hash(uint64_t item, uint64_t a, uint64_t b){
     return uint64_t ((a * item + b) % large_prime) % num_buckets ;
 }
 
-void CountMinSketch::update(uint64_t item, uint64_t weight){
+void CountMinSketch::update(uint64_t item, int64_t weight){
     /*
      * Updates the sketch with the item
      * iterates through the number of hash functions and gets the bucket index.
@@ -48,27 +62,44 @@ void CountMinSketch::update(uint64_t item, uint64_t weight){
      * Finally, increment the sketch table with the weight associated to the item.
      */
     for(uint64_t i=0; i < num_hashes; i++){
-        uint64_t a = a_hash_params.at(i) ;
-        uint64_t b = b_hash_params.at(i) ;
-        uint64_t h = CountMinSketch::get_bucket_hash(item, a, b) ;
+        uint64_t a = a_hash_params[i] ;
+        uint64_t b = b_hash_params[i] ;
+        uint64_t h = get_bucket_hash(item, a, b) ;
         table[i][h] += weight ;
     }
     total_weight += weight ;
 }
 
-uint64_t CountMinSketch::get_estimate(uint64_t item) {
+int64_t CountMinSketch::get_estimate(uint64_t item) {
     /*
      * Returns the estimate from the sketch for the given item.
      */
-    uint64_t min_frequency = std::numeric_limits<uint64_t>::max() ; // start arbitrarily large
+    int64_t estimate = std::numeric_limits<int64_t>::max() ; // start arbitrarily large
     for(uint64_t i=0; i < num_hashes; i++){
-        uint64_t a = a_hash_params.at(i) ;
-        uint64_t b = b_hash_params.at(i) ;
-        uint64_t h = CountMinSketch::get_bucket_hash(item, a, b) ;
-        uint64_t estimate = table[i][h] ;
-        if (estimate < min_frequency){
-            min_frequency = estimate ;
-        }
+        uint64_t a = a_hash_params[i] ;
+        uint64_t b = b_hash_params[i] ;
+        uint64_t h = get_bucket_hash(item, a, b) ;
+        estimate = std::min(estimate, table[i][h]) ;
     }
-    return min_frequency ;
+    return estimate ;
+}
+
+int64_t CountMinSketch::get_upper_bound(uint64_t item) {
+    /*
+     * Returns the upper bound of the estimate as:
+     * f_i - true frequency
+     * est(f_i) - estimate frequency
+     * f_i <= est(f_i)
+     */
+    return get_estimate(item) ;
+}
+
+int64_t CountMinSketch::get_lower_bound(uint64_t item) {
+    /*
+     * Returns the lower bound of the estimate as:
+     * f_i - true frequency
+     * est(f_i) - estimate frequency
+     * f_i >= est(f_i) - epsilon*||f||_1 with ||f||_1 being the total weight in the sketch.
+     */
+    return get_estimate(item) - epsilon*total_weight ;
 }
