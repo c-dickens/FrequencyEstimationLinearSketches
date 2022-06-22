@@ -10,8 +10,47 @@ using namespace std ;
 
 CountingSketch::CountingSketch(const uint64_t num_hashes, const uint64_t num_buckets, const uint64_t seed):
     num_hashes(num_hashes), num_buckets(num_buckets), seed(seed) {
-        table.resize(num_hashes, std::vector<int64_t>(num_buckets));
+    /*
+     * Class wrappers for CountMin and Count sketches.
+     * The CountMin operates in the "cash register" data stream model, meaning that the
+     * underlying frequency vector is at least zero in every coordinate.
+     * The Count sketch operates in the "turnstile" model where the underlying frequency
+     * vector can have arbitrary positive or negative weight.
+     */
+    table.resize(num_hashes, std::vector<int64_t>(num_buckets));
     };
+
+std::vector<std::vector<int64_t>> CountingSketch::get_table(){
+    /*
+     * Returns a copy of the sketch.
+     */
+    std::vector<std::vector<int64_t>> sketch(num_hashes, std::vector<int64_t>(num_buckets));
+    for(int i=0; i<num_hashes; i++){
+        for(int j=0; j<num_buckets; j++){
+            sketch[i][j] = table[i][j] ;
+        }
+    }
+    return sketch;
+}
+
+void CountingSketch::print_sketch(){
+    /*
+     * Prints the sketch to std output.
+     */
+    char eol ; // end of line character is either space for the same row or a newline
+    for(int i=0; i<num_hashes; i++){
+        for(int j=0; j<num_buckets; j++){
+            eol = (j == num_buckets - 1) ? '\n' : ' ';
+//            if(j == num_buckets - 1){
+//                eol = '\n' ;
+//            }
+//            else{
+//                eol = ' ' ;
+//            }
+            std::cout << table[i][j] << eol ;
+        }
+    }
+}
 
 //std::vector<uint64_t> CountingSketch::init_hash_parameters(uint64_t num_random_ints, uint64_t lower, uint64_t upper) {
 //    /* Generates an array of `num_random_ints` many random integers in [lower, upper]. (Upper bound is closed)

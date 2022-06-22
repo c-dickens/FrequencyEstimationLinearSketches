@@ -14,10 +14,19 @@ using namespace std ;
 class CountMinSketch : public CountingSketch {
     public:
         CountMinSketch(uint64_t num_hashes, uint64_t num_buckets, uint64_t seed)  ;
+        void update(int64_t item, int64_t weight=1) ;
+
+        // Getters
+//        std::vector<uint64_t, uint64_t, uint64_t> get_config() ;
+        std::vector<uint64_t> get_config() ;
         int64_t get_estimate(uint64_t item) ;
-        void update(uint64_t item, int64_t weight=1) ;
         int64_t get_upper_bound(uint64_t item) ;
         int64_t get_lower_bound(uint64_t item) ;
+        static uint64_t suggest_num_buckets(float relative_error) ;
+        static uint64_t suggest_num_hashes(float confidence) ;
+
+        // Merge operations
+        void merge(CountMinSketch &sketch) ;
 
 private:
         void set_hash_parameters() ;
